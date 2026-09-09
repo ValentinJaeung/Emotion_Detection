@@ -57,33 +57,57 @@ face-detection + emotion stack.
 
 ## Quickstart
 
-Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, run each
-step below in its own terminal, sourcing both of these first:
+Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, this is how
+you turn the whole pipeline on: **one process per terminal**, left running,
+in order. Each stage feeds the next one over ROS topics, so terminal 2 won't
+produce anything until terminal 1 is up, and so on.
+
+In **every** terminal below, before running its command, source ROS 2 and
+the workspace:
 
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
 ```
 
+**Terminal 1 — camera.** Opens the USB camera and starts publishing raw
+video frames. Nothing downstream works until this is running.
 ```bash
-# 1. camera
 ros2 launch usb_cam_cv camera.launch.py
+```
 
-# 2. face detection
+**Terminal 2 — face detection.** Subscribes to the camera feed, finds faces
+in each frame, and publishes a bounding box per face.
+```bash
 ros2 launch hri_face_detect face_detect.launch.py
+```
 
-# 3. emotion recognition
+**Terminal 3 — emotion recognition.** Crops each detected face and runs it
+through the FER+ model, publishing an emotion label + confidence per face.
+```bash
 ros2 launch hri_emotion_recognizer emotion_recognizer.launch.py
+```
 
-# 4. application node — reacts to a stable, confident expression change
-#    per face (currently just logs it; see ARCHITECTURE.md)
+**Terminal 4 — application node.** Reads those emotion results, applies a
+confidence threshold and smooths out frame-to-frame flicker, and reacts
+whenever a face settles on a new, stable emotion. Right now "react" just
+means logging it to this terminal — see `ARCHITECTURE.md` for what's
+implemented vs. still open.
+```bash
 ros2 run emotion_reactor emotion_reactor_node
+```
 
-# 5. optional — live visual check: camera feed with a box + "EXPRESSION NN%"
-#    label over each tracked face
+**Terminal 5 — live viewer (optional).** Pops up a window showing your
+camera feed with a green box drawn around each detected face and a label
+above it like `HAPPY 92%`. This is the one to run if you just want to
+*watch* the system work. Press `q` in the window (or Ctrl+C here) to quit.
+```bash
 ros2 run emotion_reactor emotion_viewer_node
+```
 
-# 6. inspect the raw topics directly instead of/alongside the above
+**Terminal 6 — raw topic inspection (optional).** Skip the app node/viewer
+and read the underlying data directly as text.
+```bash
 ros2 topic echo /humans/faces/tracked
 ros2 topic echo /humans/faces/<face_id>/expression
 ```
