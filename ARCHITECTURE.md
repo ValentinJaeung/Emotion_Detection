@@ -78,7 +78,21 @@ Per face, the node does:
 
 ## Where your application fits
 
-Consume `/humans/faces/<id>/expression` in a new node. The ROS4HRI Python API
-(`HRIListener`) iterates tracked faces and exposes `face.expression`, handling
-face tracking/ID bookkeeping for you. Map emotions to robot behaviour there
-(e.g. stop on `surprise`), with a confidence threshold and temporal smoothing.
+`emotion_reactor/emotion_reactor/emotion_reactor_node.py` consumes
+`/humans/faces/<id>/expression` via the ROS4HRI Python API (`HRIListener`),
+which iterates tracked faces and exposes `face.expression` /
+`face.expression_confidence`, handling face tracking/ID bookkeeping for you
+(face IDs are ephemeral — never hardcode one).
+
+It already applies a confidence threshold and a per-face majority-vote
+smoothing window (FER+ flickers frame-to-frame), and only fires on a
+*change* in the smoothed result, with state cleaned up via
+`HRIListener.on_face_lost`. What's still open is the actual behaviour
+mapping: `react(face_id, expression, confidence)` currently just logs the
+transition — mapping specific emotions to robot behaviour (e.g. stop on
+`surprise`) belongs there.
+
+`emotion_reactor/emotion_reactor/emotion_viewer_node.py` is a separate,
+non-reactive node for visually sanity-checking detection: it draws each
+tracked face's bounding box (from `face.roi`) and an `EXPRESSION NN%` label
+over the live camera feed via OpenCV.

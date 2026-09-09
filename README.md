@@ -42,7 +42,11 @@ See [`SETUP.md`](SETUP.md) for the full, reproducible setup.
    /humans/faces/<id>/expression   emotion + confidence
         |
         v
-[your application node]   react to emotions (TODO)
+[emotion_reactor]   confidence threshold + temporal smoothing per face,
+                     react() on a stable change (currently logs only —
+                     the robot-behaviour mapping is still TODO)
+[emotion_viewer]     live camera feed with box + expression % overlay
+                      (visual sanity check, no reaction logic)
 ```
 
 The three upstream nodes are independent processes connected only by topics —
@@ -53,22 +57,33 @@ face-detection + emotion stack.
 
 ## Quickstart
 
-Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, run
-each in its own terminal (source ROS 2 + the workspace in every terminal first):
+Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, run each
+step below in its own terminal, sourcing both of these first:
 
 ```bash
 source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
+```
+
+```bash
 # 1. camera
 ros2 launch usb_cam_cv camera.launch.py
 
 # 2. face detection
-ros2 launch hri_face_detect face_detect.launch.py image:=/image_raw
+ros2 launch hri_face_detect face_detect.launch.py
 
 # 3. emotion recognition
 ros2 launch hri_emotion_recognizer emotion_recognizer.launch.py
 
-# 4. inspect
+# 4. application node — reacts to a stable, confident expression change
+#    per face (currently just logs it; see ARCHITECTURE.md)
+ros2 run emotion_reactor emotion_reactor_node
+
+# 5. optional — live visual check: camera feed with a box + "EXPRESSION NN%"
+#    label over each tracked face
+ros2 run emotion_reactor emotion_viewer_node
+
+# 6. inspect the raw topics directly instead of/alongside the above
 ros2 topic echo /humans/faces/tracked
 ros2 topic echo /humans/faces/<face_id>/expression
 ```
@@ -84,9 +99,11 @@ ros2 topic echo /humans/faces/<face_id>/expression
 | `PROGRESS.md`          | Running log of what is done / in progress / blocked       |
 | `ARCHITECTURE.md`      | How the pipeline and the FER+ model work                  |
 | `TROUBLESHOOTING.md`   | Hard-won fixes (camera, conda, MJPEG, topic wiring)       |
+| `usb_cam_cv/`           | Camera node package (OpenCV V4L2 capture)                 |
+| `emotion_reactor/`      | Application node (`emotion_reactor_node`) + live viewer (`emotion_viewer_node`) |
 
-Code (camera package, application node, integrated launch) will be added as the
-project progresses — see `PROGRESS.md` for current state.
+See `PROGRESS.md` for current state — the application node's `react()` is
+still a logging stub; the emotion-to-behaviour mapping is the next real work.
 
 ---
 
