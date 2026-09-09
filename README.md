@@ -7,7 +7,7 @@ OpenCV camera node publishes frames, `hri_face_detect` finds faces, and
 
 > **Goal of this repo:** keep the project reproducible across machines.
 > Every environment-specific value (device path, camera VID/PID, topic names)
-> lives in [`docs/SETUP.md`](docs/SETUP.md) as a fill-in field, so the same
+> lives in [`SETUP.md`](SETUP.md) as a fill-in field, so the same
 > code runs anywhere once those fields are set.
 
 ---
@@ -19,10 +19,10 @@ OpenCV camera node publishes frames, `hri_face_detect` finds faces, and
 | OS        | Ubuntu 22.04.5 LTS (Jammy)                        |
 | ROS 2     | Humble                                            |
 | Install   | Native (migrated from WSL2)                       |
-| Camera    | _fill in per machine — see `docs/SETUP.md`_       |
+| Camera    | _fill in per machine — see `SETUP.md`_       |
 | Python    | System `/usr/bin/python3` (3.10) — **not** conda  |
 
-See [`docs/SETUP.md`](docs/SETUP.md) for the full, reproducible setup.
+See [`SETUP.md`](SETUP.md) for the full, reproducible setup.
 
 ---
 
@@ -53,15 +53,15 @@ face-detection + emotion stack.
 
 ## Quickstart
 
-Full, first-time setup is in [`docs/SETUP.md`](docs/SETUP.md). Once set up, run
+Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, run
 each in its own terminal (source ROS 2 + the workspace in every terminal first):
 
 ```bash
 # 1. camera
-ros2 launch <camera_pkg> camera.launch.py
+ros2 launch usb_cam_cv camera.launch.py
 
 # 2. face detection
-ros2 launch hri_face_detect face_detect.launch.py rgb_camera:=<camera_namespace>
+ros2 launch hri_face_detect face_detect.launch.py image:=/image_raw
 
 # 3. emotion recognition
 ros2 launch hri_emotion_recognizer emotion_recognizer.launch.py
@@ -78,13 +78,13 @@ ros2 topic echo /humans/faces/<face_id>/expression
 | Path                        | What it holds                                             |
 |-----------------------------|----------------------------------------------------------|
 | `README.md`                 | This overview                                             |
-| `docs/SETUP.md`             | Reproducible, per-machine setup (fill-in fields)          |
-| `docs/PROGRESS.md`          | Running log of what is done / in progress / blocked       |
-| `docs/ARCHITECTURE.md`      | How the pipeline and the FER+ model work                  |
-| `docs/TROUBLESHOOTING.md`   | Hard-won fixes (camera, conda, MJPEG, topic wiring)       |
+| `SETUP.md`             | Reproducible, per-machine setup (fill-in fields)          |
+| `PROGRESS.md`          | Running log of what is done / in progress / blocked       |
+| `ARCHITECTURE.md`      | How the pipeline and the FER+ model work                  |
+| `TROUBLESHOOTING.md`   | Hard-won fixes (camera, conda, MJPEG, topic wiring)       |
 
 Code (camera package, application node, integrated launch) will be added as the
-project progresses — see `docs/PROGRESS.md` for current state.
+project progresses — see `PROGRESS.md` for current state.
 
 ---
 

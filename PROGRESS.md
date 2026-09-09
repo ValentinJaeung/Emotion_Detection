@@ -12,9 +12,9 @@ Legend: ✅ done · 🔄 in progress · ⛔ blocked · ⬜ not started
 
 | Phase | Task                                              | Status | Notes                                  |
 |-------|---------------------------------------------------|--------|----------------------------------------|
-| 1     | Environment check (conda / device / camera)       | ⬜     |                                        |
+| 1     | Environment check (conda / device / camera)       | ✅     | see SETUP.md §0 machine profile        |
 | 2     | Install hri_face_detect + emotion_recognizer      | ⬜     | ONNX model file is the likely blocker  |
-| 3     | Wire camera into pipeline (topic / QoS / cam_info) | ⬜     | the core integration work              |
+| 3     | Wire camera into pipeline (topic / QoS / cam_info) | 🔄     | usb_cam_cv publishes /image_raw; QoS/camera_info not yet checked |
 | 4     | Verify full pipeline (rate + on-screen content)   | ⬜     |                                        |
 | 5     | Application node (react to `expression`)          | ⬜     | the actual project goal                |
 | 6     | Tuning + cleanup (brightness / resolution / model) | ⬜     |                                        |
@@ -25,8 +25,8 @@ Legend: ✅ done · 🔄 in progress · ⛔ blocked · ⬜ not started
 
 _One or two sentences: what you are doing right now and the very next action._
 
-- Now:
-- Next:
+- Now: Camera stage done (usb_cam_cv, /image_raw @ ~28-30fps, 1920x1080).
+- Next: Install hri_face_detect + hri_emotion_recognizer, then wire topic/QoS/camera_info (Phase 3).
 
 ---
 

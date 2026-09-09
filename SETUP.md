@@ -12,14 +12,14 @@ Copy this block and record the real values for the machine you are on. This is
 the single source of truth for the fill-in fields used below.
 
 ```
-Hostname:            <e.g. jaeung-laptop>
-OS / ROS 2:          Ubuntu 22.04 / Humble
-Camera model:        <e.g. gpro c950 / Jieli USB 2.0 Camera>
-Camera VID:PID:      <e.g. 1224:2a25>   (lsusb)
-Capture device:      <e.g. /dev/video2>  (see step 2)
-udev symlink:        <e.g. /dev/usb_cam> (optional, see step 2)
-Working resolution:  <e.g. 1920x1080 @ 30fps, MJPG>
-ROS workspace:       <e.g. ~/ros2_ws>
+Hostname:            val-Vivobook-ASUSLaptop-M7600QC-M7600QC
+OS / ROS 2:          Ubuntu 22.04.5 LTS (Jammy) / Humble
+Camera model:        Jieli Technology USB PHY 2.0: USB 2.0 Camera
+Camera VID:PID:      1224:2a25
+Capture device:      /dev/video2
+udev symlink:        /dev/usb_cam
+Working resolution:  1920x1080 @ 30fps, MJPG
+ROS workspace:       ~/ros2_ws
 ```
 
 ---
@@ -145,11 +145,11 @@ camera node (`/image_raw`) and `hri_face_detect` (`image` + `camera_info`).
 
 ```bash
 # terminal 1 — camera
-ros2 launch <camera_pkg> camera.launch.py
+ros2 launch usb_cam_cv camera.launch.py
 ros2 topic hz /image_raw          # expect your target fps
 
 # terminal 2 — face detection
-ros2 launch hri_face_detect face_detect.launch.py rgb_camera:=<camera_namespace>
+ros2 launch hri_face_detect face_detect.launch.py image:=/image_raw
 ros2 topic echo /humans/faces/tracked      # expect face IDs when a face is visible
 
 # terminal 3 — emotion
