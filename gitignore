@@ -1,0 +1,20 @@
+# ROS 2 / colcon build artifacts
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Large model files — track the source/URL in docs, not the binary
+*.onnx
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
