@@ -24,5 +24,6 @@ def generate_launch_description():
                 'framerate': LaunchConfiguration('framerate'),
                 'frame_id': LaunchConfiguration('frame_id'),
             }],
+            remappings=[('image_raw', 'image')],
         ),
     ])
