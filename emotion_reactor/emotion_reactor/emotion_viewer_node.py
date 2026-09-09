@@ -2,6 +2,7 @@
 import cv2
 import rclpy
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 from hri import HRIListener
@@ -20,13 +21,22 @@ class EmotionViewerNode(Node):
         super().__init__('emotion_viewer_node')
 
         self.declare_parameter('image_topic', 'image')
+        self.declare_parameter('display_scale', 0.5)
         image_topic = self.get_parameter('image_topic').value
+        self.display_scale = self.get_parameter('display_scale').value
 
         self.bridge = CvBridge()
         self.hri_listener = HRIListener('emotion_viewer_hri_listener')
 
+        # Best-effort + depth 1: always render the latest frame instead of
+        # queuing and catching up on a backlog (which looked like slow-motion).
+        image_qos = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,
+            history=QoSHistoryPolicy.KEEP_LAST,
+            depth=1,
+        )
         self.sub = self.create_subscription(
-            Image, image_topic, self._on_image, 10)
+            Image, image_topic, self._on_image, image_qos)
 
         self.get_logger().info(
             f'emotion_viewer_node ready, showing "{image_topic}" '
@@ -34,6 +44,10 @@ class EmotionViewerNode(Node):
 
     def _on_image(self, msg):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+        if self.display_scale != 1.0:
+            frame = cv2.resize(
+                frame, None, fx=self.display_scale, fy=self.display_scale,
+                interpolation=cv2.INTER_LINEAR)
         h, w = frame.shape[:2]
 
         for face_id, face in self.hri_listener.faces.items():

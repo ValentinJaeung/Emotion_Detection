@@ -57,6 +57,8 @@ Full, first-time setup is in [`SETUP.md`](SETUP.md). Once set up, run
 each in its own terminal (source ROS 2 + the workspace in every terminal first):
 
 ```bash
+source /opt/ros/humble/setup.bash
+source ~/ros2_ws/install/setup.bash
 # 1. camera
 ros2 launch usb_cam_cv camera.launch.py
 
