@@ -16,7 +16,7 @@ Legend: ✅ done · 🔄 in progress · ⛔ blocked · ⬜ not started
 | 2     | Install hri_face_detect + emotion_recognizer      | ✅     | both built from source; ONNX model + pyhri resolved |
 | 3     | Wire camera into pipeline (topic / QoS / cam_info) | ✅     | only topic name needed a fix — remapped in usb_cam_cv's own launch file; QoS and camera_info were non-issues, see SETUP.md §5 |
 | 4     | Verify full pipeline (rate + on-screen content)   | ✅     | `expression: happy, confidence: 0.9986` confirmed live |
-| 5     | Application node (react to `expression`)          | ⬜     | the actual project goal — next up      |
+| 5     | Application node (react to `expression`)          | 🔄     | `emotion_reactor` package scaffolded, builds and runs; `react()` is a logging stub — behavior mapping still TODO |
 | 6     | Tuning + cleanup (brightness / resolution / model) | ⬜     |                                        |
 
 ---
@@ -25,12 +25,13 @@ Legend: ✅ done · 🔄 in progress · ⛔ blocked · ⬜ not started
 
 _One or two sentences: what you are doing right now and the very next action._
 
-- Now: Full pipeline verified end to end (camera -> face detect -> emotion),
-  confidence 0.998 on a live "happy" read. Phases 1-4 done.
-- Next: Build the application node (Phase 5) — consume
-  `/humans/faces/<id>/expression` via `HRIListener`, with confidence
-  thresholding and temporal smoothing (FER+ flickers frame-to-frame, and face
-  IDs are ephemeral — never hardcode one).
+- Now: `emotion_reactor` ROS 2 package scaffolded — `HRIListener`-based node
+  with confidence thresholding, a majority-vote smoothing window per face id,
+  and `on_face_lost` cleanup so state never leaks across ephemeral ids. Builds
+  and runs cleanly against the real workspace; `react()` only logs so far.
+- Next: decide what `react()` should actually do (the robot-behavior mapping,
+  e.g. stop on `surprise`), implement it, then run it live against the full
+  pipeline to tune `confidence_threshold` / `smoothing_window`.
 
 ---
 
@@ -64,6 +65,33 @@ _Choices that would otherwise get re-litigated on another machine._
 
 Newest entries on top. Format: `YYYY-MM-DD — short title`, then what happened,
 why it matters, and the exact commands/paths involved.
+
+### 2026-09-09 — Added `emotion_viewer_node` (visual sanity check)
+- New node in `emotion_reactor`: shows the full `/image` feed with each
+  tracked face's bounding box (`face.roi`, normalized xywh -> pixel coords)
+  and `EXPRESSION percentage%` label drawn above it via OpenCV `imshow`.
+- Debug/visualization only — no reaction logic, separate from
+  `emotion_reactor_node`. Press `q` in the window or Ctrl+C to quit.
+- Run: `ros2 run emotion_reactor emotion_viewer_node`.
+- Verified: builds and the module imports cleanly; not yet eyeballed live
+  against a real face (no GUI available in this session).
+
+### 2026-09-09 — Scaffolded the `emotion_reactor` application node
+- New `ament_python` package `emotion_reactor` (repo: `emotion_reactor/`,
+  workspace: `~/ros2_ws/src/emotion_reactor` — remember these are two
+  unlinked copies, see `TROUBLESHOOTING.md#two-unlinked-copies-of-a-package`).
+- `emotion_reactor_node.py` uses `HRIListener` (pyhri) directly rather than
+  subscribing to the raw `Expression` topic — `face.expression` /
+  `face.expression_confidence` give the same data with tracking handled.
+- Per-face state: a `deque(maxlen=smoothing_window)` of expressions that
+  passed `confidence_threshold`, majority-voted each tick; only reacts on a
+  *change* in the smoothed result (debounced), and state is dropped in
+  `HRIListener.on_face_lost` so nothing leaks across ephemeral face ids.
+- `react()` is currently just a log line — the actual robot-behavior mapping
+  (which emotion does what) is still undecided; that's the next real work.
+- Verified: builds clean with `colcon build --packages-select emotion_reactor`
+  and runs without error via `ros2 run emotion_reactor emotion_reactor_node`
+  (no faces tracked in that smoke test, so `react()` was not exercised live).
 
 ### 2026-09-09 — Full pipeline working end to end
 - Built `hri_face_detect` and `hri_emotion_recognizer` from source; installed
