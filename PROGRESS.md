@@ -66,6 +66,15 @@ _Choices that would otherwise get re-litigated on another machine._
 Newest entries on top. Format: `YYYY-MM-DD — short title`, then what happened,
 why it matters, and the exact commands/paths involved.
 
+### 2026-09-09 — Fixed laggy `emotion_viewer_node`
+- Symptom: video played in visible slow motion once the box/label overlay
+  was on screen. Cause: default reliable/depth-10 subscription queued
+  frames faster than `imshow` at full 1080p could draw+display them, so
+  playback fell behind and replayed the backlog.
+- Fix: best-effort, depth-1 QoS on the image subscription (always renders
+  the latest frame, drops stale ones) + downscale to `display_scale` (0.5
+  default) before drawing/display. Confirmed smooth by the user.
+
 ### 2026-09-09 — Added `emotion_viewer_node` (visual sanity check)
 - New node in `emotion_reactor`: shows the full `/image` feed with each
   tracked face's bounding box (`face.roi`, normalized xywh -> pixel coords)
